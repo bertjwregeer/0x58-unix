@@ -20,5 +20,5 @@ libx58unix.a: ${ALLDEPENDS}
 	/usr/bin/ranlib libx58unix.a
 
 clean:
-	/bin/rm *.o
-	/bin/rm *.a
+	/bin/rm -f *.o
+	/bin/rm -f *.a
