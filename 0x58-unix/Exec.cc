@@ -1,5 +1,5 @@
 /*
- * Copyright 2005 Bert JW Regeer. All rights  reserved.
+ * Copyright 2006 Bert JW Regeer. All rights  reserved.
  *
  *
  * Redistribution and use in source and binary forms, with or without
@@ -22,6 +22,10 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
+ *
+ * The views and conclusions contained in the software and  documentation are
+ * those of the authors and should not be  interpreted as representing official
+ * policies, either expressed  or implied, of bsdPanel project.
  *
  */
  
@@ -82,7 +86,6 @@ int x58unix::Exec::doExec() {
                         return 1;
                 default:
                         throw x58unix::Impossible();
-                        // If we get here there is a more serious problem :P
         }
         throw x58unix::Impossible();
 }                   

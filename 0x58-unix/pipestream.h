@@ -1,5 +1,5 @@
 /*
- * Copyright 2005 X-Istence.com. All rights  reserved.
+ * Copyright 2006 Bert JW Regeer. All rights  reserved.
  *
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,10 +25,8 @@
  *
  * The views and conclusions contained in the software and  documentation are
  * those of the authors and should not be  interpreted as representing official
- * policies, either expressed  or implied, of X-Istence.com or the bsdPanel
- * project.
+ * policies, either expressed  or implied, of bsdPanel project.
  *
- * $Id: pipestream.h 44 2005-01-21 23:43:04Z xistence $
  */
 
 #ifndef x58UNIX_PIPESTREAM
