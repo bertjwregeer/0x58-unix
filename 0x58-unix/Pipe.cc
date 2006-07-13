@@ -54,7 +54,7 @@ int x58unix::Pipe::doPipe() {
                         reader.attach(from[0]);
 			return 1;
 		default:
-			x58unix::Impossible();
+			throw x58unix::Impossible();
 	}
 	return 0; // We should never get here!
 } 

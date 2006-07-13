@@ -38,14 +38,13 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <errno.h>
-// TODO #include <bsdPanelInc.h>
 #include <0x58-unix/Fork.h>
 #include <0x58-unix/pipestream.h>
 
 namespace x58unix {
 	class Pipe : public x58unix::Fork {
 		public:
-                        Pipe();
+		        Pipe() {}
 			~Pipe();
 			int doPipe();
 			int read(std::string& readOver);

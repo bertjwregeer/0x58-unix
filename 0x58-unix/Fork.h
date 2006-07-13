@@ -42,6 +42,7 @@
 namespace x58unix {
 	class Fork {
 		public:
+		        Fork () {}
 			int doFork();
 			pid_t pid;
         private:

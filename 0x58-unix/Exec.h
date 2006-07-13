@@ -54,6 +54,8 @@ namespace x58unix {
                 private:
                         std::vector<std::string> args;
                         std::vector<std::string> env;
+                        // Private exec without paramaters because reusing this object is a no-no.
+                        Exec () {}
                         Exec (Exec&);
                         Exec& operator = (Exec&);
         };
