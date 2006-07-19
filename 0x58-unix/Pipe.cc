@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright 2006 Bert JW Regeer. All rights  reserved.
  *
  *
@@ -27,7 +27,7 @@
  * those of the authors and should not be  interpreted as representing official
  * policies, either expressed  or implied, of bsdPanel project.
  *
- */
+**/
 
 #include <0x58-unix/Pipe.h>
 

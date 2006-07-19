@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright 2006 Bert JW Regeer. All rights  reserved.
  *
  *
@@ -27,7 +27,7 @@
  * those of the authors and should not be  interpreted as representing official
  * policies, either expressed  or implied, of bsdPanel project.
  *
- */
+**/
  
 #ifndef x58UNIX_PIPE
 #define x58UNIX_PIPE
