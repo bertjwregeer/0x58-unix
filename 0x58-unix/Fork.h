@@ -1,7 +1,6 @@
 /**
  * Copyright 2006 Bert JW Regeer. All rights  reserved.
  *
- *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -33,22 +32,23 @@
 #define x58UNIX_FORK
 
 #include <sys/types.h>
-#include <sys/wait.h>   /* header for waitpid() and various macros */
-#include <signal.h>     /* header for signal functions */
 #include <unistd.h>
 #include <iostream>
+#include <0x58-unix/Chain.h>
 #include <0x58-unix/Exceptions.h>
 
 namespace x58unix {
-	class Fork {
-		public:
-		        Fork () {}
-			int doFork();
-			pid_t pid;
+        class Fork : public x58unix::Chain {
+        public:
+                Fork () {}
+                ~Fork () {}
+                int execute();
+                pid_t pid;
+
         private:
-            Fork (Fork&);
-            Fork& operator = (Fork&);
-	};
+                Fork (Fork&);
+                Fork& operator = (Fork&);
+        };
 }
 
 #endif

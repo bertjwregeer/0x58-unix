@@ -1,7 +1,6 @@
 /**
  * Copyright 2006 Bert JW Regeer. All rights  reserved.
  *
- *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -38,22 +37,38 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <errno.h>
-#include <0x58-unix/Fork.h>
+#include <0x58-unix/Chain.h>
+#include <0x58-unix/Exceptions.h>
 #include <0x58-unix/pipestream.h>
 
+/**
+ * The pipe class creates two different pipes. One is for the parent to send data to the child
+ * the other is for the child to send data to the parent. After a successfull execution of
+ * execute the private _pipes is set to null, so that multiple uses of this class after each
+ * other requires the programmer to set up new pipestreams as to not overwrite the old ones,
+ * off course it is possible to just pass it the exact same std::pair, and force an overwrite.
+**/
+
 namespace x58unix {
-	class Pipe : public x58unix::Fork {
+	class Pipe : public x58unix::Chain {
 		public:
-		        Pipe() {}
-			~Pipe();
-			int doPipe();
-			int read(std::string& readOver);
-			int write(const std::string& sendOver);
+		        typedef std::pair<x58unix::ipipestream, x58unix::opipestream> pair_pipes;
+		        
+		        Pipe(Chain * chain) : Chain(), _chain(chain), _pipes(0) {}
+		        Pipe(Chain * chain, pair_pipes * pipes) 
+		                : Chain(), _chain(chain), _pipes(pipes) {}
+		        ~Pipe() {}
+		        
+		        void pipestreams (pair_pipes * pipes) {
+		                _pipes = pipes;
+		        }
+		        
+			int execute();
                 private:
-                        int to[2];
-                        int from[2];
-                        ipipestream reader;
-                        opipestream writer;
+                        Chain * _chain;
+                        pair_pipes * _pipes;
+                        
+                        Pipe();
                         Pipe (Pipe&);
                         Pipe& operator = (Pipe&);
 	};

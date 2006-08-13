@@ -1,7 +1,6 @@
 /**
  * Copyright 2006 Bert JW Regeer. All rights  reserved.
  *
- *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -57,6 +56,12 @@ namespace x58unix {
                 public:
                         PipeFailed() 
                                 : std::runtime_error("Pipe creation failed.") { };
+        };
+        
+        class NoPipes : public std::runtime_error {
+                public:
+                        NoPipes() 
+                                : std::runtime_error("Programmer forgot to pass a new std::pair!") { };
         };
         
         class ForkFailed : public std::runtime_error {

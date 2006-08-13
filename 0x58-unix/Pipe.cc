@@ -1,7 +1,6 @@
 /**
  * Copyright 2006 Bert JW Regeer. All rights  reserved.
  *
- *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -31,50 +30,46 @@
 
 #include <0x58-unix/Pipe.h>
 
-int x58unix::Pipe::doPipe() {
+int x58unix::Pipe::execute() {
+        // Declare the int array's to be used for pipe!
+        int to[2];
+        int from[2];
+        
+        if (_pipes == 0) {
+                throw x58unix::NoPipes();
+        }
+        
 	if ( pipe(to) == -1) {
 		throw x58unix::PipeFailed();
 	}
 
 	if ( pipe(from) == -1) {
+	        // Make sure to close the already open to pipes
+	        close(to[0]);
+	        close(to[1]);
 		throw x58unix::PipeFailed();
 	}
+	
+	_chain->execute();
 
-	switch ( doFork() ) {
-		case 0:
-			close(to[1]);        // Close to end of pipe
-			close(from[0]);      // Close reading end of pipe
-			dup2(to[0], STDIN_FILENO);      // std::cin goes to 0.
-                        dup2(from[1], STDOUT_FILENO);    // std::cout goes to 1
-			return 0;
-		case 1:
-			close(to[0]);
-			close(from[1]);
-                        writer.attach(to[1]);
-                        reader.attach(from[0]);
-			return 1;
-		default:
-			throw x58unix::Impossible();
-	}
+        if (_chain->state == _chain->Child) {
+                close(to[1]);        // Close to end of pipe
+                close(from[0]);      // Close reading end of pipe
+                dup2(to[0], STDIN_FILENO);      // std::cin goes to 0.
+                dup2(from[1], STDOUT_FILENO);    // std::cout goes to 1
+                
+                state = _chain->state;
+                return 0;
+        }
+        if (_chain->state == _chain->Parent) {
+                close(to[0]);
+                close(from[1]);
+                (_pipes->second).attach(to[1]);           // The input to the forked application
+                (_pipes->first).attach(from[0]);        // The reading from the forked application
+                
+                state = _chain->state;
+                _pipes = 0;                             // This class can be reused
+                return 1;
+        }
 	return 0; // We should never get here!
-} 
-
-int x58unix::Pipe::write(const std::string& sendOver) {
-        writer << sendOver;
-        writer.flush();
-        return sendOver.length();
-}
-
-int x58unix::Pipe::read(std::string& readOver) {
-        std::getline(reader, readOver);
-        return readOver.length();
-}
-
-
-x58unix::Pipe::~Pipe() {
-        // Close any and all pipes. Don't care if it fails or not
-        close(to[0]);
-        close(to[1]);
-        close(from[0]);
-        close(from[1]);
 }

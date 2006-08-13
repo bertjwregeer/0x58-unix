@@ -10,9 +10,9 @@ libx58unix.a: ${ALLDEPENDS}
 	/usr/bin/ar rc libx58unix.a *.o
 	/usr/bin/ranlib libx58unix.a
 
-Fork.o: Fork.cc Fork.h Exceptions.h
-Pipe.o: Pipe.cc Pipe.h Fork.h Exceptions.h
-Exec.o: Exec.cc Exec.h Pipe.h Fork.h Exceptions.h
+Fork.o: Fork.cc Fork.h Exceptions.h Chain.h
+Pipe.o: Pipe.cc Pipe.h Fork.h Exceptions.h Chain.h
+Exec.o: Exec.cc Exec.h Pipe.h Fork.h Exceptions.h Chain.h
 
 .cc.o:
 	$(CXX) ${CXXFLAGS} -c $<

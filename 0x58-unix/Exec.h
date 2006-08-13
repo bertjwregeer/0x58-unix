@@ -1,7 +1,6 @@
 /**
  * Copyright 2006 Bert JW Regeer. All rights  reserved.
  *
- *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -38,20 +37,21 @@
 #include <vector>
 #include <memory>
 #include <unistd.h>
-#include <0x58-unix/Pipe.h>
+#include <0x58-unix/Chain.h>
 #include <0x58-unix/Exceptions.h>
 
 #define MAXARG 512
 
 namespace x58unix {
-        class Exec : public x58unix::Pipe {
+        class Exec : public x58unix::Chain {
                 public:
-                        typedef std::auto_ptr<Exec> Ptr;
-                        Exec( std::vector<std::string> const & _args);
-                        Exec( std::vector<std::string> const & _args, std::vector<std::string> const & _env);
-                        int doExec();
+                        Exec(Chain * chain, std::vector<std::string> const & _args);
+                        Exec(Chain * chain, std::vector<std::string> const & _args, std::vector<std::string> const & _env);
+                        ~Exec() {}
+                        int execute();
                           
                 private:
+                        Chain * _chain;
                         std::vector<std::string> args;
                         std::vector<std::string> env;
                         // Private exec without paramaters because reusing this object is a no-no.

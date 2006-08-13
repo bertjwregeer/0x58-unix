@@ -1,7 +1,6 @@
 /**
  * Copyright 2006 Bert JW Regeer. All rights  reserved.
  *
- *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -42,124 +41,146 @@
 
 namespace x58unix {
         
-        /*
+        /**
          * pipeoutbuf is a class which extends streambuf and defines the virtual 
          * function named overflow and xsputn which allow us to send the data
          * over a pipe named "fd" using write.
          *
-         * Eventhough I wrote bits and pieces of this. Most of the credit should go
-         * to the many programmers who wrote the code before me, from whose examples
-         * I learned. Most notably from comp.lang.c++. 
-         */
+         * To create an output buffer is simple, according to the standard the only
+         * function that has to be overriden is the overflow function. See streambuf
+         * in the standard. We also override xsputn since it allows for a more efficient
+         * implementation that can write multiple characters to the file descriptor.
+        **/
         
         class pipeoutbuf : public std::streambuf {
-                // Declaration of variable before it is used
-                protected:
-                        int fd;
                 public:
-                        pipeoutbuf () : fd(-1) {}
-                        pipeoutbuf (int myfd) : fd(myfd) {}
+                        pipeoutbuf () : _fd(-1) {};
+                        pipeoutbuf (int fd) : _fd(fd) {}
+                        ~pipeoutbuf () {
+                                close(_fd);
+                        }
                         
-                        void attach (int _fd) {
-                                fd = _fd;
+                        void attach (int fd) {
+                                if (_fd != -1) close (_fd);
+                                _fd = fd;
+                        }
+                        
+                        int ogetfd () {
+                                return _fd;
                         }
                         
                 protected:
+                        int _fd;
+                        
                         // Write one character
                         virtual int_type overflow (int_type g) {
-                                if (g != EOF) {
+                                if (_fd == -1) return traits_type::eof();
+                                
+                                if (g != traits_type::eof()) {
                                         char z = g;
-                                        if (write (fd, &z, 1) != 1) {
-                                                return EOF;
+                                        if (write (_fd, &z, 1) != 1) {
+                                                return traits_type::eof();
                                         }
                                 }
                         return g;
                         }
                         
                         virtual std::streamsize xsputn (const char* s, std::streamsize num) {
-                                return write(fd, s, num);
+                                if (_fd == -1) return traits_type::eof();
+                                return write(_fd, s, num);
                         }
         };
         
-        /*
+        /**
          * opipestream, just a basic wrapper which extends std::ostream. When you call 
          * it, you pass it an "fd" which is an open file descriptor, and from then on
-         * you can use it like you would use cout. bsdPanel::opipestream blah(write[0]);
+         * you can use it like you would use cout. x58unix::opipestream blah(write[0]);
          * blah << someString;
-         */
+        **/
         
         class opipestream : public std::ostream {
-                protected:
-                        pipeoutbuf buf;
                 public:
-                        opipestream (int fd = -1) : std::ostream(0), buf(fd) {
-                                rdbuf(&buf);
+                        opipestream (int fd = -1) : std::ostream(0), _buf(fd) {
+                                rdbuf(&_buf);
                         }
                         
                         void attach (int fd) {
                                 flush();
-                                buf.attach(fd);
+                                _buf.attach(fd);
                         }
+                        
+                        int getfd () {
+                                return _buf.ogetfd();
+                        }
+                protected:
+                        pipeoutbuf _buf;
         };
         
-        /*
+        /**
          * pipeinbuf is a class which extends std::streambuf. It is used for buffering
          * when reading from pipes. It reads from a standard file descriptor.
          *
-         * Eventhough I wrote bits and pieces of this. Most of the credit should go
-         * to the many programmers who wrote the code before me, from whose examples
-         * I learned. Most notably from comp.lang.c++. 
+         * Pointer arithmetic is a pain in the ass, as are character arrays!
          *
-         * Did I note that messing with character arrays is a pain in the ass?
-         */
+         * To create a input buffer according to the standard only one function
+         * has to be overriden, underflow(), see streambuf in the standard for
+         * more information. It is in underflow() that all the logic is held
+         * for the putback area, as the rest is done through the functions
+         * egptr, gptr, eback, which are pointers which are set through setg
+         * in the function underflow() and constructor.
+        **/
         
         class pipeinbuf : public std::streambuf {
                 protected:
-                        int fd;
+                        int _fd;
                         
-                        /* data buffer:
-                         * - at most, pbSize characters in putback area plus
-                         * - at most, bufSize characters in ordinary read buffer
-                         */
+                        /**
+                         * data buffer:
+                         * at most, pbSize characters in putback area plus
+                         * at most, bufSize characters in ordinary read buffer
+                        **/
                          
-                         static const int pbSize = 8;        // size of putback area
-                         static const int bufSize = 1024;    // size of the data buffer
-                         char buffer[bufSize+pbSize];        // data buffer
+                         static const int pbSize = 8;           // size of putback area
+                         static const int bufSize = 1024;       // size of the data buffer
+                         char buffer[bufSize+pbSize];           // The actual buffer
                 public:
-                        /* constructor
-                         * - initialize file descriptor
-                         * - initialize empty data buffer
-                         * - no putback area
-                         * => force underflow()
-                         */
+                        /**
+                         * Constructor takes an file descriptor
+                         * - Use setg to set the beginning pointer, read pointer, and the end pointer
+                         * since they are all the same, the next character extraction will cause an
+                         * underflow();
+                        **/
                          
-                        pipeinbuf () : fd(-1) {
-                        /*
-                                setg (buffer+pbSize,     // beginning of putback area
-                                        buffer+pbSize,     // read position
-                                        buffer+pbSize);    // end position
-                        */
-                        }
+                        pipeinbuf () : _fd(-1) {}
                          
-                         pipeinbuf (int myfd) : fd(myfd) {
-                                if (myfd != -1)
-                                        setg (buffer+pbSize,     // beginning of putback area
-                                                buffer+pbSize,     // read position
-                                                buffer+pbSize);    // end position
+                        pipeinbuf (int fd) : _fd(fd) {
+                                if (_fd != -1)
+                                        setg (buffer+pbSize,            // No putback
+                                                buffer+pbSize,          // read pointer
+                                                buffer+pbSize);         // end pointer
                         }
                         
-                        void attach(int _fd) {
-                                setg (buffer+pbSize,     // beginning of putback area
-                                        buffer+pbSize,     // read position
-                                        buffer+pbSize);    // end position
-                                fd = _fd;
+                        ~pipeinbuf() {
+                                close(_fd);
+                        }
+                        
+                        void attach(int fd) {
+                                if (_fd != -1) close(_fd);
+                                
+                                setg (buffer+pbSize, buffer+pbSize, buffer+pbSize);
+                                _fd = fd;
+                        }
+                        
+                        int igetfd() {
+                                return _fd;
                         }
                         
                 protected:
                         // insert new characters into the buffer
                         virtual int_type underflow () {
-                                // is read position before end of buffer?
+                                // is read position before end of buffer
                                 if (gptr() < egptr()) {
+                                        // No need to read more characters, return the next available one
                                         return traits_type::to_int_type(*gptr());
                                 }
                                 
@@ -174,25 +195,24 @@ namespace x58unix {
                                        numPutback = pbSize;
                                 }
         
-                                /* copy up to pbSize characters previously read into
-                                 * the putback area.
-                                 * memmove is used becauce some example on google's newsgroup told me to use it.
+                                /* copy the last few read
+                                 * memmove is used, it does a non-destructive copy. See memmove(3)
                                  */
                                 
                                 memmove (buffer+(pbSize-numPutback), gptr()-numPutback, numPutback);
 
                                 // read at most bufSize new characters
                                 int num;
-                                num = read (fd, buffer+pbSize, bufSize);
+                                num = read(_fd, buffer+pbSize, bufSize);
                                 if (num <= 0) {
                                         // ERROR or EOF
-                                        return EOF;
+                                        return traits_type::eof();
                                 }
                                 
                                 // reset buffer pointers
-                                setg (buffer+(pbSize-numPutback),   // beginning of putback area
-                                        buffer+pbSize,                // read position
-                                        buffer+pbSize+num);           // end of buffer
+                                setg (buffer+(pbSize-numPutback),       // beginning of putback area
+                                        buffer+pbSize,                  // read position
+                                        buffer+pbSize+num);             // end of buffer
                                 
                                 // return next character
                                 return traits_type::to_int_type(*gptr());
@@ -207,17 +227,23 @@ namespace x58unix {
          */
          
         class ipipestream : public std::istream {
-                protected:
-                        pipeinbuf buf;
+                
                 public:                        
-                        ipipestream (int fd = -1) : std::istream(0), buf(fd) {
-                                rdbuf(&buf);
+                        ipipestream (int fd = -1) : std::istream(0), _buf(fd) {
+                                rdbuf(&_buf);
                         }
                         
                         void attach (int fd) {
-                                buf.attach(fd);
+                                _buf.attach(fd);
                         }
-        };        
+                        
+                        int getfd() {
+                                return _buf.igetfd();
+                        }
+                
+                protected:
+                        pipeinbuf _buf;
+        };    
 }
 
 #endif

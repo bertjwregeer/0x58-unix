@@ -28,24 +28,28 @@
  *
 **/
 
-#include <0x58-unix/Fork.h>
+#ifndef BSDPANEL_CHAIN_H
+#define BSDPANEL_CHAIN_H
 
-int x58unix::Fork::execute () {
-
-	pid = ::fork();
-
-	switch ( pid ) {
-	
-		case -1:
-			throw x58unix::ForkFailed();
-		case 0:
-			state = Child;
-			return 0;
-			break;
-		default:
-			state = Parent;
-			return pid;
-			break;
-	}
-	return 0;
+namespace x58unix {
+        class Chain  {
+        public:
+                Chain () {};
+                virtual ~Chain() {};
+                virtual int execute() = 0;
+                enum Type { Parent, Child } state;
+        };
+        
+        class Noop : public x58unix::Chain {
+        public:
+                Noop (Type _state) : Chain() {
+                        state = _state;
+                }
+                ~Noop () {}
+                int execute() {
+                        return 0;
+                }
+        };
 }
+
+#endif /* BSDPANEL_CHAIN_H */

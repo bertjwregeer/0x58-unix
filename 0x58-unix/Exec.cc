@@ -1,7 +1,6 @@
 /**
  * Copyright 2006 Bert JW Regeer. All rights  reserved.
  *
- *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -31,14 +30,14 @@
  
 #include <0x58-unix/Exec.h>
  
-x58unix::Exec::Exec( std::vector<std::string> const & _args) : Pipe(), args(_args) {
+x58unix::Exec::Exec(Chain * chain, std::vector<std::string> const & _args) : _chain(chain), args(_args) {
         if (args.size() > MAXARG)
                 throw x58unix::TooManyArgs();
         if (args.size() == 0)
                 throw x58unix::NoArgs();
 }
 
-x58unix::Exec::Exec( std::vector<std::string> const & _args,  std::vector<std::string> const & _env) : Pipe(), args(_args), env(_env) {
+x58unix::Exec::Exec(Chain * chain, std::vector<std::string> const & _args,  std::vector<std::string> const & _env) : _chain(chain), args(_args), env(_env) {
         if (args.size() > MAXARG)
                 throw x58unix::TooManyArgs();
         if (env.size() > MAXARG)
@@ -47,7 +46,7 @@ x58unix::Exec::Exec( std::vector<std::string> const & _args,  std::vector<std::s
                 throw x58unix::NoArgs();
 }
 
-int x58unix::Exec::doExec() {
+int x58unix::Exec::execute() {
         char **argv = 0;
         char **envi = 0;
         
@@ -72,20 +71,20 @@ int x58unix::Exec::doExec() {
                 }
                 envi[i] = static_cast<char *> (0);
         }
+
+        _chain->execute();
         
-        switch(doPipe()) {
-                case 0:
-                        if ( argv && envi == 0 )
-                                execv(argv[0], argv);
-                        if ( argv && envi )
-                                execve(argv[0], argv, envi);
-                                                                             
-                        _exit(-1);
-                        break;
-                case 1:
-                        return 1;
-                default:
-                        throw x58unix::Impossible();
+        if (_chain->state == _chain->Child) {
+                if ( argv && envi == 0 )
+                        execv(argv[0], argv);
+                if ( argv && envi )
+                        execve(argv[0], argv, envi);
+
+                _exit(-1);
+        }
+        
+        if (_chain->state == _chain->Parent) {
+                return 1;
         }
         throw x58unix::Impossible();
 }                   
