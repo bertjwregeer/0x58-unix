@@ -13,6 +13,7 @@ libx58unix.a: ${ALLDEPENDS}
 Fork.o: Fork.cc Fork.h Exceptions.h Chain.h
 Pipe.o: Pipe.cc Pipe.h Fork.h Exceptions.h Chain.h
 Exec.o: Exec.cc Exec.h Pipe.h Fork.h Exceptions.h Chain.h
+xuEvent.o: xuEvent.cc xuEvent.h Exceptions.h
 
 .cc.o:
 	$(CXX) ${CXXFLAGS} -c $<
