@@ -28,8 +28,8 @@
  *
 **/
 
-#ifndef BSDPANEL_CHAIN_H
-#define BSDPANEL_CHAIN_H
+#ifndef x58UNIX_CHAIN_H
+#define x58UNIX_CHAIN_H
 
 namespace x58unix {
         class Chain  {
@@ -52,4 +52,4 @@ namespace x58unix {
         };
 }
 
-#endif /* BSDPANEL_CHAIN_H */
+#endif /* x58UNIX_CHAIN_H */
