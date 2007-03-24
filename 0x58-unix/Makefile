@@ -21,3 +21,4 @@ xuEvent.o: xuEvent.cc xuEvent.h Exceptions.h
 clean:
 	/bin/rm -f *.o
 	/bin/rm -f *.a
+	/bin/rm -f *~
