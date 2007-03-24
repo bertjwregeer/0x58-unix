@@ -39,7 +39,7 @@
 #include <errno.h>
 #include <0x58-unix/Chain.h>
 #include <0x58-unix/Exceptions.h>
-#include <0x58-unix/pipestream.h>
+#include <0x58-unix/xuStreams.h>
 
 /**
  * The pipe class creates two different pipes. One is for the parent to send data to the child
@@ -52,14 +52,14 @@
 namespace x58unix {
 	class Pipe : public x58unix::Chain {
 		public:
-		        typedef std::pair<x58unix::ipipestream, x58unix::opipestream> pair_pipes;
+		        typedef std::pair<x58unix::iFdstream, x58unix::oFdstream> pair_pipes;
 		        
 		        Pipe(Chain * chain) : Chain(), _chain(chain), _pipes(0) {}
 		        Pipe(Chain * chain, pair_pipes * pipes) 
 		                : Chain(), _chain(chain), _pipes(pipes) {}
 		        ~Pipe() {}
 		        
-		        void pipestreams (pair_pipes * pipes) {
+		        void setpipes (pair_pipes * pipes) {
 		                _pipes = pipes;
 		        }
 		        

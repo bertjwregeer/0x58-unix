@@ -64,8 +64,8 @@ int x58unix::Pipe::execute() {
         if (_chain->state == _chain->Parent) {
                 close(to[0]);
                 close(from[1]);
-                (_pipes->second).attach(to[1]);           // The input to the forked application
-                (_pipes->first).attach(from[0]);        // The reading from the forked application
+                _pipes->second = to[1];           // The input to the forked application
+                _pipes->first = from[0];        // The reading from the forked application
                 
                 state = _chain->state;
                 _pipes = 0;                             // This class can be reused

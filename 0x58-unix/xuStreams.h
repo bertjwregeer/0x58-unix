@@ -28,40 +28,131 @@
  *
 **/
 
+#ifndef x58UNIX_XUSTREAMS
+#define x58UNIX_XUSTREAMS
+
+#include <istream>
+#include <ostream>
+#include <streambuf>
+#include <iostream>
+#include <cstring>
+
+#include <unistd.h>
+
+
 namespace x58unix {
-        namespace xuStreamsTypes {
-                struct Writable {};
-                struct Readable {};
-        }       
-        
-        template <typename _TStream>
-        
-        
+	class xuFdoutbuf : public std::streambuf {
+		public:
+			xuFdoutbuf (int fd) : _fd(fd) { };
+			~xuFdoutbuf () {
+				close(_fd);
+			}
+
+			void attach (int fd) {
+				if (_fd != -1) close (_fd);
+				_fd = fd;
+			}
+		
+			int retfd () {
+				return _fd;
+			}
+
+		protected:
+			// File descriptor for the file stream
+			int _fd;
+
+			// Overload functions overflow and xsputn
+		private:
+			xuFdoutbuf ();
+	};
+
+	class xuFdinbuf : public std::streambuf {
+		protected:
+			// File descriptor for the file stream
+			int _fd;
+		public:	
+			xuFdinbuf (int fd) : _fd(fd) { };
+			~xuFdinbuf () {
+				close(_fd);
+			}
+
+			void attach (int fd) {
+				if (_fd != -1) close(_fd);
+				_fd = fd;
+			}
+			
+			int retfd() {
+				return _fd;
+			}
+
+		protected:
+			// Overload functions underflow. Putback area required?
+
+		private:
+			xuFdinbuf();
+	};
+
+	class oFdstream : public std::ostream {
+		public:
+			oFdstream (int fd = -1) : std::ostream(0), _buf(fd) {
+				rdbuf(&_buf);
+			}
+
+			// implement overloaded = operator. This allows one to do:
+			// oFdstream *myStream = new oFdstream();
+			// (*myStream) = <fd>;
+			// Easier to read what is meant, and makes them act more like file_t's.
+			
+			oFdstream& operator=(const int fd) {
+				_buf.attach(fd);
+				return *this;
+			}
+
+			// Some people might want access to the fd associated with the stream
+			// We give them a std::pair, wether it is read or write, or both. If 
+			// it is an out stream, only the first one will be set, the second will
+			// be -1. Which is always an invalid fd in the unix world.
+
+			std::pair<int, int> getfd () {
+				std::pair<int, int> fds;
+				fds.first = _buf.retfd();
+				fds.second = -1;
+				return fds;
+			}
+		
+		protected:
+			xuFdoutbuf _buf;
+	};
+
+	class iFdstream : public std::istream {
+		public:
+			iFdstream (int fd = -1) : std::istream(0), _buf(fd) {
+				rdbuf(&_buf);
+
+			}
+
+			// See comment in oFdstream. Overload the = operator
+			
+			iFdstream& operator=(const int fd) {
+				_buf.attach(fd);
+				return *this;
+			}
+
+			// Some people might want access to the fd associated with the stream
+			// We give them a std::pair, wether it is read or write, or both. If
+			// it is to be an in stream, only the second onewill be set, the first will
+			// be -1. Which will always an invalid fd in the unix world.
+
+			std::pair<int, int> getfd () {
+				std::pair<int, int> fds;
+				fds.first = -1;
+				fds.second = _buf.retfd();
+				return fds;
+			}
+		protected:
+			xuFdinbuf _buf;
+	};
+
 } /* x58unix */
 
-namespace sample {
-        class fdInput  {
-        public:
-                typedef x58unix::xuStreamTypes::Readable type;
-                
-                fdInput (int fd);
-                ~fdInput ();
-                
-                std::streamsize read (char *s, std::streamsize n) {
-                        // Do the reading stuff here
-                }
-        };
-        
-        class fdOutput  {
-        public:
-                typedef x58unix::xuStreamTypes::Writable type;
-                fdOutput (int fd);
-                ~fdOutput ();
-                
-                std::streamsize write (const char *s, std::streamsize n) {
-                        // Do the writing here
-                }
-        };
-        
-} /* sample */
-
+#endif
