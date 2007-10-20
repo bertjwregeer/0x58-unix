@@ -1,7 +1,7 @@
 OPTIMIZE ?=0
 CXXFLAGS = -I. -I.. -Wall -pipe -O${OPTIMIZE} ${DEBUG}
 
-ALLDEPENDS = Fork.o Pipe.o Exec.o
+ALLDEPENDS = Fork.o Pipe.o Exec.o xuEvent.o eventKqueue.o
 ALL = ${ALLDEPENDS} libx58unix.a
 
 all: ${ALL}
@@ -14,6 +14,7 @@ Fork.o: Fork.cc Fork.h Exceptions.h Chain.h
 Pipe.o: Pipe.cc Pipe.h Fork.h Exceptions.h Chain.h
 Exec.o: Exec.cc Exec.h Pipe.h Fork.h Exceptions.h Chain.h
 xuEvent.o: xuEvent.cc xuEvent.h Exceptions.h
+eventKqueue.o: eventKqueue.cc eventKqueue.h xuEvent.h Exceptions.h
 
 .cc.o:
 	$(CXX) ${CXXFLAGS} -c $<
