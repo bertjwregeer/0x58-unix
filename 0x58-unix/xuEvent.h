@@ -34,8 +34,14 @@
 namespace x58unix {
         class xuEvent  {
         public:
+                class xuEventcb  {
+                public:
+                        xuEventcb();
+                        ~xuEventcb();
+                };
+                
                 xuEvent ();
-                virtual ~xuEvent() const = 0;
+                virtual ~xuEvent() = 0;
                 
                 /*                   callback,    fd, oneshot, clear
                  * callback: Called when the event returns
@@ -46,6 +52,8 @@ namespace x58unix {
                  *          is reset to neutral. Basically readding the event back
                  *          causing it to be reported as fired again the next time
                  *          the state changes to be true for the event.
+                 * 
+                 * Returns a true if the call succeeded, or false if the call failed
                 **/
                 
                 virtual bool ev_read(xuEventcb *, int, bool, bool) const = 0;
@@ -58,7 +66,7 @@ namespace x58unix {
                  * ev_vnode(xuEventcb *, 6, false, true, vnode::removed | vnode::write)
                  * where 6 is a valid open file descriptor to a file that is to be monitored
                 **/
-                const static struct vnode {
+                struct vnode {
                         const static int removed = (1 << 0);
                                 // Set this to be notified if the file gets removed
                         const static int write = (1 << 1);
@@ -79,12 +87,9 @@ namespace x58unix {
                 virtual bool ev_proc() const = 0;
                 virtual bool ev_signal() const = 0;
                 virtual bool ev_timer() const = 0;
-
-                class xuEventcb  {
-                public:
-                        xuEventcb();
-                        ~xuEventcb();
-                };
+                
+                virtual void ev_dispatch() const = 0;
+                
         private:
         };
 }
