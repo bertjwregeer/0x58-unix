@@ -59,6 +59,15 @@ namespace x58unix {
                 virtual bool ev_read(xuEventcb *, int, bool, bool) const = 0;
                 virtual bool ev_write(xuEventcb *, int, bool, bool) const = 0;
                 
+                /*                     fd
+                 * Remove the item from the event handler
+                 * fd: File descriptor
+                 *
+                 * Returns true if the call succeeded
+                 */
+                virtual bool ev_read_del(int) const = 0;
+                virtual bool ev_write_del(int) const = 0;
+                
                 /*                    callback,    fd, oneshot, clear, special flags
                  * The rest of the paramaters stay the same, the only thing that changes
                  * is the fact that the vnode can take what sort of actions to look for.
