@@ -41,10 +41,10 @@
 
 
 namespace x58unix {
-	class xuFdoutbuf : public std::streambuf {
+	class xufdoutbuf : public std::streambuf {
 		public:
-			xuFdoutbuf (int fd) : _fd(fd) { };
-			~xuFdoutbuf () {
+			xufdoutbuf (int fd) : _fd(fd) { };
+			~xufdoutbuf () {
 				close(_fd);
 			}
 
@@ -63,16 +63,16 @@ namespace x58unix {
 
 			// Overload functions overflow and xsputn
 		private:
-			xuFdoutbuf ();
+			xufdoutbuf ();
 	};
 
-	class xuFdinbuf : public std::streambuf {
+	class xufdinbuf : public std::streambuf {
 		protected:
 			// File descriptor for the file stream
 			int _fd;
 		public:	
-			xuFdinbuf (int fd) : _fd(fd) { };
-			~xuFdinbuf () {
+			xufdinbuf (int fd) : _fd(fd) { };
+			~xufdinbuf () {
 				close(_fd);
 			}
 
@@ -89,12 +89,12 @@ namespace x58unix {
 			// Overload functions underflow. Putback area required?
 
 		private:
-			xuFdinbuf();
+			xufdinbuf();
 	};
 
-	class oFdstream : public std::ostream {
+	class ofdstream : public std::ostream {
 		public:
-			oFdstream (int fd = -1) : std::ostream(0), _buf(fd) {
+			ofdstream (int fd = -1) : std::ostream(0), _buf(fd) {
 				rdbuf(&_buf);
 			}
 
@@ -103,7 +103,7 @@ namespace x58unix {
 			// (*myStream) = <fd>;
 			// Easier to read what is meant, and makes them act more like file_t's.
 			
-			oFdstream& operator=(const int fd) {
+			ofdstream& operator=(const int fd) {
 				_buf.attach(fd);
 				return *this;
 			}
@@ -121,19 +121,19 @@ namespace x58unix {
 			}
 		
 		protected:
-			xuFdoutbuf _buf;
+			xufdoutbuf _buf;
 	};
 
-	class iFdstream : public std::istream {
+	class ifdstream : public std::istream {
 		public:
-			iFdstream (int fd = -1) : std::istream(0), _buf(fd) {
+			ifdstream (int fd = -1) : std::istream(0), _buf(fd) {
 				rdbuf(&_buf);
 
 			}
 
 			// See comment in oFdstream. Overload the = operator
 			
-			iFdstream& operator=(const int fd) {
+			ifdstream& operator=(const int fd) {
 				_buf.attach(fd);
 				return *this;
 			}
@@ -150,7 +150,7 @@ namespace x58unix {
 				return fds;
 			}
 		protected:
-			xuFdinbuf _buf;
+			xufdinbuf _buf;
 	};
 
 } /* x58unix */

@@ -52,7 +52,7 @@
 namespace x58unix {
 	class Pipe : public x58unix::Chain {
 		public:
-		        typedef std::pair<x58unix::iFdstream, x58unix::oFdstream> pair_pipes;
+		        typedef std::pair<x58unix::ifdstream, x58unix::ofdstream> pair_pipes;
 		        
 		        Pipe(Chain * chain) : Chain(), _chain(chain), _pipes(0) {}
 		        Pipe(Chain * chain, pair_pipes * pipes) 
