@@ -75,5 +75,11 @@ namespace x58unix {
                         Impossible()
                                 : std::runtime_error("This is an impossible code path!") { }
         };
+        
+        class DispatchFailed : public std::runtime_error {
+                public:
+                        DispatchFailed()
+                                : std::runtime_error("Event dispatch failed") { }
+        };
 }
 #endif

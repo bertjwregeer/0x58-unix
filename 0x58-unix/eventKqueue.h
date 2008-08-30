@@ -1,5 +1,5 @@
 /**
- * Copyright 2007 Bert JW Regeer. All rights  reserved.
+ * Copyright 2008 Bert JW Regeer. All rights  reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -31,24 +31,31 @@
 #ifndef x58UNIX_EVENTKQUEUE_H
 #define x58UNIX_EVENTKQUEUE_H
 
-#include <0x58-unix/xuEvent.h>
+#include <0x58-unix/Event.h>
+#include <0x58-unix/Exceptions.h>
 #include <sys/event.h>
 #include <sys/time.h>
+#include <sys/types.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <stdint.h>
 
 
 namespace x58unix {
         namespace eventImplementation {
-                class eventKqueue : public x58unix::xuEvent {
+                class eventKqueue : public x58unix::Event {
                 public:
                         eventKqueue ();
                         ~eventKqueue ();
                 
-                        bool ev_read(x58unix::xuEvent::xuEventcb *, int, bool, bool);
+                        bool read(void *, int, bool, bool);
+                        bool write(void *, int, bool, bool);
+                        void dispatch();
                 
                 private:
                         int _kq;
+                        
+                        bool _addEvent(uintptr_t ident, short filter, u_short flags, u_int fflags, intptr_t data, void *udata);
                 };
         }
 }

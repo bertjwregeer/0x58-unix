@@ -1,5 +1,5 @@
 /**
- * Copyright 2007 Bert JW Regeer. All rights  reserved.
+ * Copyright 2008 Bert JW Regeer. All rights  reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -38,31 +38,56 @@ x58unix::eventImplementation::eventKqueue::~eventKqueue() {
         close(_kq);
 }
 
-bool x58unix::eventImplementation::eventKqueue::ev_read(x58unix::xuEvent::xuEventcb * cb, int fd, bool oneshot, bool clear) 
-{
+bool x58unix::eventImplementation::eventKqueue::_addEvent(uintptr_t ident, short filter, u_short flags, u_int fflags, intptr_t data, void *udata) {
         // This is the new kevent we are going to add to the queue
         struct kevent change;
         
-        // This is a timespec that we are going to be using to make sure kevent immediatly returns
+        // We need a timespec that is going to let us return immediatly
         struct timespec ts;
         ts.tv_sec = 0;
         ts.tv_nsec = 0;
         
-        // Set up the flags
-        unsigned int flags = EV_ADD | EV_ENABLE;
-        if (oneshot) flags |= EV_ONESHOT;
-        if (clear)   flags |= EV_CLEAR;
+        // Use a macro to fill kevent
+        EV_SET(&change, ident, filter, flags, fflags, data, udata);
         
-        // Set up the kevent structure with the appropriate information. Callback is stored in the udata section of kqueue
-        EV_SET(&change, fd, EVFILT_READ, flags, 0, 0, (void *)cb);
-        
-        // Add the event to the queue, and since we have a timespec of 0, it returns immediatly, and lets us know if it was successful or not
+        // Add the event to the kqueue, we tell it we just want to add 1 and immediatly return using the timespec we have set up
         if (kevent(_kq, &change, 1, 0, 0, &ts) < 0) {
-                // Failure. Return
+                // Failure. Return false
                 perror("kqueue: ");
                 return false;
         }
         
-        // Everything was fine. Sweet :D.
         return true;
+}
+
+bool x58unix::eventImplementation::eventKqueue::read(void * cb, int fd, bool oneshot, bool clear) 
+{
+        unsigned int flags = EV_ADD | EV_ENABLE;
+        if (oneshot) flags |= EV_ONESHOT;
+        if (clear)   flags |= EV_CLEAR;
+        
+        return _addEvent(fd, EVFILT_READ, flags, 0, 0, (void *)cb);
+
+}
+
+bool x58unix::eventImplementation::eventKqueue::write(void * cb, int fd, bool oneshot, bool clear) 
+{
+        unsigned int flags = EV_ADD | EV_ENABLE;
+        if (oneshot) flags |= EV_ONESHOT;
+        if (clear)   flags |= EV_CLEAR;
+        
+        return _addEvent(fd, EVFILT_WRITE, flags, 0, 0, (void *)cb);
+}
+
+void x58unix::eventImplementation::eventKqueue::dispatch() {
+        struct kevent event;
+        
+        while (1) {
+                int nev = kevent(_kq, 0, 0, &event, 1, 0);
+                
+                if (nev == -1) {
+                        perror("kqueue: ");
+                        throw x58unix::DispatchFailed();
+                }
+        }
 }
