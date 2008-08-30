@@ -1,5 +1,5 @@
 /**
- * Copyright 2006 Bert JW Regeer. All rights  reserved.
+ * Copyright 2008 Bert JW Regeer. All rights  reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -32,72 +32,15 @@
 #define x58UNIX_UEVENT_H
 
 namespace x58unix {
-        class xuEvent  {
+        class Event  {
         public:
-                class xuEventcb  {
-                public:
-                        xuEventcb();
-                        ~xuEventcb();
-                };
                 
-                xuEvent ();
-                virtual ~xuEvent() = 0;
+                Event ();
+                virtual ~Event() = 0;
+                virtual bool read() const = 0;
+                virtual bool write() const = 0;
                 
-                /*                   callback,    fd, oneshot, clear
-                 * callback: Called when the event returns
-                 * fd: File descriptor
-                 * oneshot: Once the event returns, and the callback has been fired
-                 *          remove the event from the system.
-                 * clear: After each time the event returns the state of the event
-                 *          is reset to neutral. Basically readding the event back
-                 *          causing it to be reported as fired again the next time
-                 *          the state changes to be true for the event.
-                 * 
-                 * Returns a true if the call succeeded, or false if the call failed
-                **/
-                
-                virtual bool ev_read(xuEventcb *, int, bool, bool) const = 0;
-                virtual bool ev_write(xuEventcb *, int, bool, bool) const = 0;
-                
-                /*                     fd
-                 * Remove the item from the event handler
-                 * fd: File descriptor
-                 *
-                 * Returns true if the call succeeded
-                 */
-                virtual bool ev_read_del(int) const = 0;
-                virtual bool ev_write_del(int) const = 0;
-                
-                /*                    callback,    fd, oneshot, clear, special flags
-                 * The rest of the paramaters stay the same, the only thing that changes
-                 * is the fact that the vnode can take what sort of actions to look for.
-                 * Ex:
-                 * ev_vnode(xuEventcb *, 6, false, true, vnode::removed | vnode::write)
-                 * where 6 is a valid open file descriptor to a file that is to be monitored
-                **/
-                struct vnode {
-                        const static int removed = (1 << 0);
-                                // Set this to be notified if the file gets removed
-                        const static int write = (1 << 1);
-                                // Set this to be notified if the file gets written to (can include negative)
-                        const static int extend = (1 << 2);
-                                // Set this to be notified if the file gets extended
-                        const static int attrib = (1 << 3);
-                                // Set this to be notified if the file gets it's attributes changed
-                        const static int link = (1 << 4);
-                                // Set this to be notified if the link count for the file changes
-                        const static int rename = (1 << 5);
-                                // Set this to be notified if the file was renamed
-                        const static int revoke = (1 << 6);
-                                // Set this to be notified if file access has been revoked with revoke(2);
-                };
-                
-                virtual bool ev_vnode(xuEventcb *, int, bool, bool, unsigned int) const = 0;
-                virtual bool ev_proc() const = 0;
-                virtual bool ev_signal() const = 0;
-                virtual bool ev_timer() const = 0;
-                
-                virtual void ev_dispatch() const = 0;
+                virtual void dispatch() const = 0;
                 
         private:
         };
