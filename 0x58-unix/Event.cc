@@ -1,31 +1,51 @@
 /**
- * Copyright 2006 Bert JW Regeer. All rights  reserved.
+ * Copyright (c) 2008 Bert JW Regeer <xistence@0x58.com>
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
+ * Permission to use, copy, modify, and distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
  *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
- *
- * The views and conclusions contained in the software and  documentation are
- * those of the authors and should not be  interpreted as representing official
- * policies, either expressed  or implied, of bsdPanel project.
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
 **/
 
 #include <0x58-unix/Event.h>
+
+namespace x58unix {
+        namespace eventImplementation {
+                /**
+                        Implement the functionality for EventRoll
+                **/
+                EventRoll& EventRoll::retrieve() {
+                        static EventRoll roll;
+                        return roll;
+                }
+                
+                /**
+                        TODO Error checking? Or should we assume programmer won't want to shoot himself in his own foot?
+                **/
+                void EventRoll::enroll (std::string name, event_fptr fptr) {
+                        _roll.insert(std::pair<std::string, event_fptr>(name,fptr));
+                }
+                
+                /**
+                        FIXME Actually implement search functionality
+                **/
+                event_fptr EventRoll::search(std::string name) {
+                        return 0;
+                }
+                
+                /**
+                        Implement the functionality for EventEnroll
+                **/
+                EventEnroll::EventEnroll(std::string name, event_fptr fptr) {
+                        EventRoll::retrieve().enroll(name, fptr);
+                }
+        }
+}
