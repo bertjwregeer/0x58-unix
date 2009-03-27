@@ -47,4 +47,5 @@ namespace x58unix {
         }
 }
 
+REGISTER_EVENT(kqueue, 20, x58unix::eventImplementation::eventKqueue);
 #endif /* x58UNIX_EVENTKQUEUE_H */

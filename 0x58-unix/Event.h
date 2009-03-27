@@ -18,8 +18,9 @@
 #ifndef x58UNIX_UEVENT_H
 #define x58UNIX_UEVENT_H
 
+#include <iostream>
 #include <string>
-#include <map>
+#include <vector>
 
 namespace x58unix {
         
@@ -53,10 +54,6 @@ namespace x58unix {
         private:
         };
         
-        /**
-                Private namespace where the implementation details go. Should mostly be hidden to outsiders.
-        **/
-        
         namespace eventImplementation {
                 template<class E> x58unix::Event* event_factory() {
                         return new E;
@@ -64,21 +61,32 @@ namespace x58unix {
                 
                 typedef x58unix::Event* (*event_fptr)(void);
                 
-                class EventRoll  {
+                class EventRegistry  {
                 private:
-                        std::map<std::string, event_fptr> _roll;
+                        typedef struct Event_t
+                        {
+                                std::string name;
+                                int weight;
+                                event_fptr fptr;
+                        } event_t;
+                        
+                        std::vector<event_t> _roll;
+                        
                 public:
-                        static EventRoll& retrieve();
-                        void enroll(std::string, event_fptr);
+                        static EventRegistry& retrieve();
                         event_fptr search(std::string);
+                        void enroll(std::string, int, event_fptr);
+                        
+                        friend std::ostream& operator<< (std::ostream&, const EventRegistry&);
                 };
                 
-                class EventEnroll {
+                class EventRegister {
                 public:
-                        EventEnroll(std::string, event_fptr);
+                        EventRegister(std::string, int, event_fptr);
                 };
         }
 }
 
-#define ENROLL_EVENT(ename, event) x58unix::eventImplementation::EventEnroll _event_enroll_##ename(#ename, &x58unix::eventImplementation::event_factory<event>);
+
+#define REGISTER_EVENT(ename, weight, event) x58unix::eventImplementation::EventRegister _event_register_##ename(#ename, weight, &x58unix::eventImplementation::event_factory<event>);
 #endif /* x58UNIX_UEVENT_H */

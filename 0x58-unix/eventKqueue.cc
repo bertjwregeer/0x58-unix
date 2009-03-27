@@ -91,6 +91,3 @@ namespace x58unix {
                 }
         }
 }
-
-// We enroll the event handler in the roll call.
-ENROLL_EVENT(kqueue, x58unix::eventImplementation::eventKqueue);

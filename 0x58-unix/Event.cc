@@ -18,34 +18,48 @@
 #include <0x58-unix/Event.h>
 
 namespace x58unix {
+        
+        Event::Event() { }
+        
+        Event::~Event() { }
+        
+        
         namespace eventImplementation {
-                /**
-                        Implement the functionality for EventRoll
-                **/
-                EventRoll& EventRoll::retrieve() {
-                        static EventRoll roll;
+                
+                EventRegistry& EventRegistry::retrieve() {
+                        static EventRegistry roll;
                         return roll;
                 }
                 
                 /**
                         TODO Error checking? Or should we assume programmer won't want to shoot himself in his own foot?
                 **/
-                void EventRoll::enroll (std::string name, event_fptr fptr) {
-                        _roll.insert(std::pair<std::string, event_fptr>(name,fptr));
+                void EventRegistry::enroll (std::string name, int weight, event_fptr fptr) {
+                        event_t new_event;
+                        
+                        new_event.name = name;
+                        new_event.weight = weight;
+                        new_event.fptr = fptr;
+                        
+                        _roll.push_back(new_event);
                 }
                 
                 /**
-                        FIXME Actually implement search functionality
+                        TODO: Throw an error if the one that is requested is not available!
                 **/
-                event_fptr EventRoll::search(std::string name) {
+                event_fptr EventRegistry::search(std::string name) {
+                        
+                        for (std::vector<event_t>::iterator a = _roll.begin(), b = _roll.end(); a!=b; a++) {
+                                if ((*a).name == name)
+                                        return (*a).fptr;
+                        }
+                        
                         return 0;
                 }
                 
-                /**
-                        Implement the functionality for EventEnroll
-                **/
-                EventEnroll::EventEnroll(std::string name, event_fptr fptr) {
-                        EventRoll::retrieve().enroll(name, fptr);
+                EventRegister::EventRegister(std::string name, int weight, event_fptr fptr) {
+                        EventRegistry::retrieve().enroll(name, weight, fptr);
                 }
         }
+        
 }
